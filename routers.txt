@@ -10,3 +10,9 @@ Router9;192.168.9.1;00:1D:2E:3F:4G:5H;false;sala04;Linksys WRT3200ACM;ASUSWRT-Me
 Router10;192.168.10.1;00:1E:2F:3G:4H:5I;true;sala01;D-Link DIR-890L;Gargoyle;900;
 Router11;192.168.11.1;00:1F:2G:3H:4I:5J;false;sala02;Google Nest Wifi;DD-WRT;1200;
 Router12;192.168.12.1;00:2A:3B:4C:5D:6E;true;sala03;Ubiquiti AmpliFi HD;OpenWrt;1500;
+Router13;10.0.0.1;AA:11:BB:22:CC:33;true;ServerRoom;Cisco ISR 4000;IOS-XE;5000;
+Router14;10.0.0.2;AA:11:BB:22:CC:44;true;ServerRoom;Cisco ISR 4000;IOS-XE;5000;
+Router15;10.0.1.1;BB:22:CC:33:DD:55;true;Oficina A;Mikrotik hEX;RouterOS;1000;
+Router16;10.0.2.1;CC:33:DD:44:EE:66;true;Oficina B;Ubiquiti EdgeRouter;EdgeOS;1000;
+Router17;10.0.3.1;DD:44:EE:55:FF:77;true;Sotano;Linksys WRT54G;DD-WRT;54;
+Router18;172.16.0.1;EE:55:FF:66:00:88;false;Mantenimiento;TP-Link Basic;Stock;100;
