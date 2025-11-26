@@ -4,6 +4,7 @@ import red.datos.CargarParametros;
 import red.datos.Dato;
 import red.interfaz.Interfaz;
 import red.logica.Logica;
+import red.logica.Red;
 import red.modelo.Conexion;
 import red.modelo.Equipo;
 
@@ -20,10 +21,14 @@ public class Cordinador {
     Logica red;
     TreeMap<String, Equipo> equipos;
     List<Conexion> conexiones;
+    Red datosRed;
 
     public void inicio()
     {
         inicioDatos();
+
+        inicioRed();
+
         inicioUI();
     }
 
@@ -67,6 +72,11 @@ public class Cordinador {
         }
 
 
+    }
+
+    private void inicioRed()
+    {
+        datosRed = new Red(equipos, conexiones);
     }
 
     /**

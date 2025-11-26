@@ -1,194 +1,149 @@
 package red.logica;
 
-import java.util.*;
-import java.util.Map.Entry;
+import net.datastructures.*;
+import red.modelo.Conexion;
+import red.modelo.Equipo;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.TreeMap;
 
-import net.datastructures.AdjacencyMapGraph;
-import net.datastructures.Edge;
-import net.datastructures.Graph;
-import net.datastructures.GraphAlgorithms;
-import net.datastructures.Map;
-import net.datastructures.PositionalList;
-import net.datastructures.ProbeHashMap;
-import net.datastructures.Vertex;
-import red.modelo.*;
-
+/**
+ * Clase encargada de la lógica de negocio de la red de computadoras.
+ * Maneja el grafo principal y la ejecución de algoritmos de análisis de red.
+ */
 public class Logica {
+
     private Graph<Equipo, Conexion> red;
-    private TreeMap<String, Vertex<Equipo>> vertices;
-    
+    private HashMap<String, Vertex<Equipo>> vertices;
+
     /**
-     * Constructor de logica, al ser llamado crea el grafo red
-     * @param equipos
-     * @param conexiones
+     * Constructor que inicializa el grafo principal y carga los datos de equipos y conexiones.
+     *
+     * @param equipos Mapa ordenado de equipos donde la clave es el ID y el valor es el objeto Equipo.
+     * @param conexiones Lista de objetos Conexion que definen las aristas del grafo.
+     * Complejidad Temporal: O(V + E), donde V es el número de equipos y E el número de conexiones.
      */
     public Logica(TreeMap<String, Equipo> equipos, List<Conexion> conexiones) {
         red = new AdjacencyMapGraph<>(false);
+        vertices = new HashMap<>();
 
-        // Cargar Equipos
-        vertices = new TreeMap<>();
-        for (Entry<String, Equipo> entry : equipos.entrySet()) {
-            String key = entry.getKey();
-            Equipo equipo = entry.getValue();
-            Vertex<Equipo> vertex = red.insertVertex(equipo);
-            vertices.put(key, vertex);
-            System.out.println("Insertar vertice: " + equipo.getIpAddress() + " LLave " + key);
+        for (Equipo equipo : equipos.values()) {
+            Vertex<Equipo> v = red.insertVertex(equipo);
+            vertices.put(equipo.getId(), v);
         }
 
-        // Cargar Conexiones
-        for (Conexion conexion : conexiones) {
-            String ipSource = conexion.getSource().getIpAddress();
-            String ipTarget = conexion.getTarget().getIpAddress();
-            
-            Vertex<Equipo> sourceVertex = vertices.get(conexion.getSource().getId());
-            Vertex<Equipo> targetVertex = vertices.get(conexion.getTarget().getId());
+        for (Conexion con : conexiones) {
+            Vertex<Equipo> v1 = vertices.get(con.getSource().getId());
+            Vertex<Equipo> v2 = vertices.get(con.getTarget().getId());
 
-            if (sourceVertex != null && targetVertex != null) {
-                System.out.println("Insertar arco entre: " + ipSource + " y " + ipTarget);
-                red.insertEdge(sourceVertex, targetVertex, conexion);
-            } else {
-                System.err.println("Error: Vertice no encontrado por IPs " + ipSource + " o " + ipTarget);
-            }
-        }
-        
-        System.out.println("Vertices: ");
-        for (Vertex<Equipo> p : red.vertices()) {
-        	System.out.println(p.getElement().getId());
-        }
-        
-        System.out.println("Conexiones: ");
-        for (Edge<Conexion> p : red.edges()) {
-            System.out.println(p.getElement().getSource().getId() + " conectado a " + p.getElement().getTarget().getId());
-        }
-        
-        
-    }
-
-    /**
-     * adapta red para que pueda ser manejado por algoritmos como shortestPathList y MST
-     * @return grafo sin equipos y conexiones falsas ademas de eliminar los vertices sin conectar
-     * @throws IllegalArgumentException vertice no encontrado
-     */
-    private Graph<Equipo, Integer> adaptedGraph() throws IllegalArgumentException {
-        // Crear una copia del grafo
-        Graph<Equipo, Integer> adapted = new AdjacencyMapGraph<>(false);
-        ProbeHashMap<String, Vertex<Equipo>> res = new ProbeHashMap<>();
-
-        // Insertar vértices activos en el grafo adaptado
-        for (Vertex<Equipo> result : red.vertices()) {
-            if (result.getElement().isStatus()) { // Ignorar equipos inactivos
-            	Vertex<Equipo> aux = adapted.insertVertex(result.getElement());
-                res.put(result.getElement().getId(),aux);
-            }
-        }
-
-        Vertex<Equipo> source, target;
-
-        // Determinar el ancho de banda máximo para el cálculo de peso inverso
-        int maxBandwidth = 0;
-        for (Edge<Conexion> result : red.edges()) {
-            if (result.getElement().getBandwidth() > maxBandwidth) maxBandwidth = result.getElement().getBandwidth();
-        }
-
-        // Insertar aristas activas en el grafo adaptado
-        for (Edge<Conexion> result : red.edges()) {
-            if (result.getElement().isStatus()) { // Ignorar conexiones inactivas
-                source = res.get(result.getElement().getSource().getId());
-                target = res.get(result.getElement().getTarget().getId());
-                if (source != null && target != null) {
-                    int weight = maxBandwidth / result.getElement().getBandwidth();
-                    adapted.insertEdge(source, target, weight);
-                    System.out.println("Insertar arista de " + source.getElement().getId() + " a " + target.getElement().getId());
-                } else {
-                    throw new IllegalArgumentException("Source o target no válido " + source.getElement().getId() + " " + target.getElement().getId());
+            if (v1 != null && v2 != null) {
+                if (red.getEdge(v1, v2) == null) {
+                    red.insertEdge(v1, v2, con);
                 }
             }
         }
-        
-        Map<String, Vertex<Equipo>> aEliminar = new ProbeHashMap<>();
-        for (Vertex<Equipo> p : adapted.vertices()) {
-        	if (adapted.outDegree(p) == 0 && adapted.inDegree(p) == 0) aEliminar.put(p.getElement().getId(), p); //Guardo los elementos a borrar
-        }
-        
-        for (String p : aEliminar.keySet()) {
-        	adapted.removeVertex(aEliminar.get(p));
-        }
-        	
-        
-        
-        for (Vertex<Equipo> p : adapted.vertices()) {
-        	System.out.println("Insertar: " + p.getElement().getId());
-        }
-        return adapted;
-        
     }
-    
+
     /**
-     * Método para verificar si un equipo con la dirección IP indicada está activo
-     * @param ipAddress ip del equipo a revisar
-     * @return estatus del equipo
+     * Verifica si un equipo con una dirección IP específica existe y se encuentra activo en la red.
+     *
+     * @param ip Dirección IP del equipo a verificar.
+     * @return true si el equipo existe y su estado es activo, false en caso contrario.
+     * Complejidad Temporal: O(V), ya que en el peor de los casos se recorren todos los vértices del grafo.
      */
-    public boolean ping(String ipAddress) {
-        try {
-            for (Vertex<Equipo> vertex : red.vertices()) {
-                Equipo equipo = vertex.getElement();
-                if (equipo == null) {
-                    throw new NullPointerException("El vértice no tiene un elemento asociado.");
-                }
-                if (equipo.getIpAddress().equals(ipAddress)) {
-                    return equipo.isStatus();
+    public boolean ping(String ip) {
+        for (Vertex<Equipo> v : red.vertices()) {
+            if (v.getElement().getIpAddress().equals(ip)) {
+                return v.getElement().isStatus();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Calcula el camino óptimo (menor latencia) entre dos equipos utilizando el algoritmo de Dijkstra.
+     * Se consideran únicamente los nodos y conexiones que están activos.
+     *
+     * @param idOrigen Identificador del equipo de origen.
+     * @param idDestino Identificador del equipo de destino.
+     * @return Una lista posicional de vértices que representa la ruta desde el origen hasta el destino.
+     * @throws IllegalArgumentException Si alguno de los equipos no existe o no está activo en el grafo adaptado.
+     * Complejidad Temporal: O(E log V), dominada por la ejecución del algoritmo de Dijkstra.
+     */
+    public PositionalList<Vertex<Equipo>> traceroute(String idOrigen, String idDestino) {
+        Graph<Equipo, Integer> grafoActivo = crearGrafoActivo();
+
+        Vertex<Equipo> origenNode = null;
+        Vertex<Equipo> destinoNode = null;
+
+        for (Vertex<Equipo> v : grafoActivo.vertices()) {
+            String id = v.getElement().getId();
+            if (id.equals(idOrigen)) {
+                origenNode = v;
+            }
+            if (id.equals(idDestino)) {
+                destinoNode = v;
+            }
+        }
+
+        if (origenNode == null || destinoNode == null) {
+            throw new IllegalArgumentException("Uno o ambos equipos no se encuentran activos o no existen en la red.");
+        }
+
+        return GraphAlgorithms.shortestPathList(grafoActivo, origenNode, destinoNode);
+    }
+
+    /**
+     * Calcula el Árbol de Expansión Mínima (MST) de la red activa basándose en la latencia de las conexiones.
+     * Utiliza el algoritmo de Prim-Jarnik o Kruskal según la implementación subyacente.
+     *
+     * @return Una lista de cadenas de texto formateadas describiendo las conexiones del MST y sus latencias.
+     * Complejidad Temporal: O(E log E) o O(E log V), dependiendo de la implementación específica del algoritmo de MST.
+     */
+    public List<String> MST() {
+        Graph<Equipo, Integer> grafoActivo = crearGrafoActivo();
+        PositionalList<Edge<Integer>> mstEdges = GraphAlgorithms.MST(grafoActivo);
+
+        List<String> resultado = new ArrayList<>();
+        for (Edge<Integer> e : mstEdges) {
+            Vertex<Equipo>[] endpoints = grafoActivo.endVertices(e);
+            String linea = endpoints[0].getElement().getId() + " <--> " +
+                    endpoints[1].getElement().getId() + " [Latencia: " + e.getElement() + " ms]\n";
+            resultado.add(linea);
+        }
+        return resultado;
+    }
+
+    /**
+     * Crea y retorna una copia del grafo original que incluye únicamente los equipos y conexiones activos.
+     * Las aristas del nuevo grafo utilizan la latencia (Integer) como peso para los algoritmos.
+     *
+     * @return Un grafo no dirigido con los elementos activos de la red.
+     * Complejidad Temporal: O(V + E), requerida para recorrer y filtrar todos los vértices y aristas del grafo original.
+     */
+    private Graph<Equipo, Integer> crearGrafoActivo() {
+        Graph<Equipo, Integer> grafoActivo = new AdjacencyMapGraph<>(false);
+        HashMap<String, Vertex<Equipo>> mapaActivos = new HashMap<>();
+
+        for (Vertex<Equipo> v : red.vertices()) {
+            if (v.getElement().isStatus()) {
+                Vertex<Equipo> nuevoV = grafoActivo.insertVertex(v.getElement());
+                mapaActivos.put(v.getElement().getId(), nuevoV);
+            }
+        }
+
+        for (Edge<Conexion> e : red.edges()) {
+            Conexion c = e.getElement();
+            if (c.isStatus()) {
+                Vertex<Equipo> v1 = mapaActivos.get(c.getSource().getId());
+                Vertex<Equipo> v2 = mapaActivos.get(c.getTarget().getId());
+
+                if (v1 != null && v2 != null) {
+                    grafoActivo.insertEdge(v1, v2, c.getLatencia());
                 }
             }
-        } catch (NullPointerException e) {
-            System.err.println("Error: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Error inesperado: " + e.getMessage());
         }
-        return false; 
-    }
-    
-
-    /**
-     * Calcula el camino mas corto entre origen y destino, considera si existen tales vertices
-     * @param idAdressOrigen origen
-     * @param idAdressDestino destino
-     * @return camino mas corto entre origen y destino
-     */
-    public PositionalList<Vertex<Equipo>> traceroute(String idAdressOrigen, String idAdressDestino) {
-        // Adaptar el grafo
-        Graph<Equipo, Integer> adapted = adaptedGraph();   
-		
-        // Obtener los vértices correspondientes a las direcciones ID
-        Vertex<Equipo> source = vertices.get(idAdressOrigen);
-        Vertex<Equipo> target = vertices.get(idAdressDestino);
-
-        if (source == null || target == null) {
-            throw new IllegalArgumentException("Una de las direcciones IP no se encuentra en el grafo.");
-        }
-
-        PositionalList<Vertex<Equipo>> lista = GraphAlgorithms.shortestPathList(adapted, source, target);
-
-
-        return lista;
-	}
-
-    /**
-     * Calciula el Arbol de expansion minimo del grafo red adaptado
-     * @return lista de conexiones
-     */
-    public List<String> MST(){
-        Graph<Equipo, Integer> mstGraph = adaptedGraph();
-           
-        PositionalList<Edge<Integer>> mst = GraphAlgorithms.MST(mstGraph);
-        
-        List<String> conexiones = new LinkedList<>();   
-        
-        for (Edge<Integer> p : mst) {
-        	Vertex<Equipo>[] aux = mstGraph.endVertices(p);
-        	conexiones.add(aux[0].getElement().getId() + "\t-->\t" + aux[1].getElement().getId() + "\t" + p.getElement() +"\n");
-        	
-        }
-        
-        return conexiones;
+        return grafoActivo;
     }
 }
