@@ -67,13 +67,6 @@ public class Cordinador {
             System.err.print("Error al cargar archivos de datos");
             System.exit(-1);
         }
-        for (String id : equipos.keySet()) {
-            System.out.println("Nodo ID: " + id);
-        }
-        for (Conexion conexion : conexiones) {
-            System.out.println("Conexion de " + conexion.getSource().getId() + " a " + conexion.getTarget().getId());
-
-        }
     }
 
     private void inicioRed()
@@ -92,11 +85,11 @@ public class Cordinador {
             int opcion = Interfaz.opcion();
             switch (opcion) {
                 case 3:
-                    Interfaz.ping(red);
+                    Interfaz.ping(red, datosRed);
                     break;
 
                 case 2:
-                    Interfaz.resultadoTraceroute(red);
+                    Interfaz.resultadoTraceroute(red, datosRed);
                     break;
 
                 case 1:

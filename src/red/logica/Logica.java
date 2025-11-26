@@ -72,6 +72,9 @@ public class Logica {
      * Complejidad Temporal: O(E log V), dominada por la ejecución del algoritmo de Dijkstra.
      */
     public PositionalList<Vertex<Equipo>> traceroute(String idOrigen, String idDestino) {
+
+        PositionalList<Vertex<Equipo>> camino;
+
         Graph<Equipo, Integer> grafoActivo = crearGrafoActivo();
 
         Vertex<Equipo> origenNode = null;
@@ -91,7 +94,9 @@ public class Logica {
             throw new IllegalArgumentException("Uno o ambos equipos no se encuentran activos o no existen en la red.");
         }
 
-        return GraphAlgorithms.shortestPathList(grafoActivo, origenNode, destinoNode);
+        camino = GraphAlgorithms.shortestPathList(grafoActivo, origenNode, destinoNode);
+
+        return camino;
     }
 
     /**
