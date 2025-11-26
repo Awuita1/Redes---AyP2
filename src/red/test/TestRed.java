@@ -64,7 +64,7 @@ class LogicaTest {
     @DisplayName("Caso 2: Traceroute Complejo - Red Nueva a Red Vieja")
     void testTracerouteInterRedes() {
 
-        PositionalList<Vertex<Equipo>> ruta = logica.traceroute("PC17", "PC5");
+        PositionalList<Vertex<Equipo>> ruta = logica.traceroute("172.16.0.5", "192.168.5.0");
 
         assertNotNull(ruta);
         assertFalse(ruta.isEmpty());
@@ -92,7 +92,7 @@ class LogicaTest {
         // Conexión directa R17-R16 existe en txt pero tiene latencia 500 (Satelital).
         // Camino alternativo por R3 -> R1 -> R13... es más rápido.
 
-        PositionalList<Vertex<Equipo>> ruta = logica.traceroute("PC16", "PC12");
+        PositionalList<Vertex<Equipo>> ruta = logica.traceroute("10.0.3.51", "10.0.2.20");
 
         assertTrue(ruta.size() > 4,
                 "El algoritmo tomó el atajo satelital lento (4 saltos). Debería haber tomado el camino largo pero rápido.");
