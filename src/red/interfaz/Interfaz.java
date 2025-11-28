@@ -33,58 +33,61 @@ public class Interfaz {
         return input;
     }
 
+    public static String leerIP(TreeMap<String, Equipo> datos) {
+        String ip = utilUI.seleccionarIP("Seleccione equipo al que hacerle ping", "Seleccione la direccion IP del equipo:", datos);
+        return ip;
+    }
+
     /**
-     * muestra el resultado de ping
-     * @param red logica de ping
+     * Muestra el resultado del ping
+     * @param equipo
+     * @param estado
      */
-    public static void ping(Logica red, Red datos){
+    public static void ping(String equipo, boolean estado){
 
-        String ipAddress = utilUI.seleccionarIP(
-                "Ping",
-                "Seleccione la direccion IP del equipo a hacer ping:",
-                datos.getEquipos()
-        );
 
-        boolean activo = red.ping(ipAddress);
-          // Verificar si el equipo está activo;
-          if (activo) {
-            JOptionPane.showMessageDialog(null, "El equipo con la direccion IP" + ipAddress + "Esta activo");
+          if (estado) {
+            JOptionPane.showMessageDialog(null, "El equipo con la direccion IP" + equipo + "Esta activo");
         }else {
-             JOptionPane.showMessageDialog(null, "El equipo con IP " + ipAddress + " no está activo o no se encuentra en la red.");
+             JOptionPane.showMessageDialog(null, "El equipo con IP " + equipo + " no está activo o no se encuentra en la red.");
         }
     }
-    
+
     /**
-     * Muestra el resultado de traceroute
-     * @param red logica de traceroute
+     * Muestra el resultado del traceroute
+     * @param ipOrigen
+     * @param ipDestino
+     * @param camino
      */
-    public static void resultadoTraceroute(Logica red, Red datos) {
-//    	String ipOrigen = JOptionPane.showInputDialog(
-//                "Ingrese la direccion ID del equipo de salida o -1 para salir:" );
-//        String ipDestino = JOptionPane.showInputDialog(
-//                "Ingrese la direccion ID del equipo de objetivo o -1 para salir:" );
-        String ipOrigen = utilUI.seleccionarIP("Traceroute", "Origen:", datos.getEquiposEncendidos());
-        String ipDestino = utilUI.seleccionarIP("Traceroute", "Destino:", datos.getEquiposEncendidos());
+    public static void resultadoTraceroute(String ipOrigen, String ipDestino, PositionalList<Vertex<Equipo>> camino) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("Traceroute %s -> %s\n\n", ipOrigen, ipDestino));
+        sb.append(String.format("%-4s %-18s\n", "Hop", "IP"));
+        sb.append("--------------------------------\n");
 
-        try{
-            PositionalList<Vertex<Equipo>> camino = red.traceroute(ipOrigen, ipDestino);
-            for (Vertex<Equipo> p : camino) {
-                System.out.println(p);
-            }
-
-            String traceroute = "";
-            for (Vertex<Equipo> conexion : camino) {
-                traceroute += conexion.getElement().getIpAddress() + " -> ";
-            }
-
-            JOptionPane.showMessageDialog(null, traceroute);
-        } catch(IllegalArgumentException e){
-            JOptionPane.showMessageDialog(null, e.getMessage());
+        int hop = 0;
+        for (Vertex<Equipo> conexion : camino) {
+            hop++;
+            String ip = conexion.getElement().getIpAddress();
+            sb.append(String.format("%-4d %-18s\n", hop, ip));
         }
 
+        if (hop == 0) {
+            JOptionPane.showMessageDialog(null, "No se encontró ruta entre " + ipOrigen + " y " + ipDestino + ".");
+            return;
+        }
 
+        sb.append("\nTotal de saltos: ").append(hop);
+
+        JTextArea outputTextArea = new JTextArea(sb.toString());
+        outputTextArea.setEditable(false);
+        outputTextArea.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 12));
+        outputTextArea.setCaretPosition(0);
+
+        JOptionPane.showMessageDialog(null, outputTextArea, "Traceroute", JOptionPane.INFORMATION_MESSAGE);
     }
-    
+
+
     /**
      * Muestra el arbol de expansion minimo
      * @param red logica de MST

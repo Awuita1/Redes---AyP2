@@ -1,5 +1,7 @@
 package red.controlador;
 
+import net.datastructures.PositionalList;
+import net.datastructures.Vertex;
 import red.datos.CargarParametros;
 import red.datos.Dato;
 import red.interfaz.Interfaz;
@@ -85,11 +87,11 @@ public class Cordinador {
             int opcion = Interfaz.opcion();
             switch (opcion) {
                 case 3:
-                    Interfaz.ping(red, datosRed);
+                    ejecutarPing();
                     break;
 
                 case 2:
-                    Interfaz.resultadoTraceroute(red, datosRed);
+                    ejecutarTraceroute();
                     break;
 
                 case 1:
@@ -110,5 +112,20 @@ public class Cordinador {
                     break;
             }
         }
+    }
+
+    private void ejecutarPing(){
+        String equipo = Interfaz.leerIP(datosRed.getEquipos());
+        boolean estado = red.ping(equipo);
+        Interfaz.ping(equipo, estado);
+    }
+
+    private void ejecutarTraceroute(){
+        String destino = Interfaz.leerIP(datosRed.getEquiposEncendidos());
+        String origen = Interfaz.leerIP(datosRed.getEquiposEncendidos());
+
+        PositionalList<Vertex<Equipo>> traceroute = red.traceroute(destino, origen);
+
+        Interfaz.resultadoTraceroute(origen, destino, traceroute);
     }
 }
