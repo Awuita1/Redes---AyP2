@@ -52,7 +52,6 @@ public class Cordinador {
      */
     private void inicioDatos()
     {
-        // Cargar parámetros
         try {
             CargarParametros.parametros();
         } catch (IOException e) {
@@ -95,7 +94,7 @@ public class Cordinador {
                     break;
 
                 case 1:
-                    Interfaz.MST(red);
+                    ejecutarMST();
                     break;
 
                 case 0:
@@ -124,8 +123,17 @@ public class Cordinador {
         String destino = Interfaz.leerIP(datosRed.getEquiposEncendidos());
         String origen = Interfaz.leerIP(datosRed.getEquiposEncendidos());
 
-        PositionalList<Vertex<Equipo>> traceroute = red.traceroute(destino, origen);
+        try{
+            PositionalList<Vertex<Equipo>> traceroute = red.traceroute(destino, origen);
+            Interfaz.resultadoTraceroute(origen, destino, traceroute);
+        }
+        catch(IllegalArgumentException e){
+            Interfaz.mostrarError(e.getMessage());
+        }
+    }
 
-        Interfaz.resultadoTraceroute(origen, destino, traceroute);
+    private void ejecutarMST(){
+        List<String> mst = red.MST();
+        Interfaz.MST(mst);
     }
 }

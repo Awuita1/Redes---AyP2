@@ -94,7 +94,11 @@ public class Logica {
             throw new IllegalArgumentException("Uno o ambos equipos no se encuentran activos o no existen en la red.");
         }
 
-        camino = GraphAlgorithms.shortestPathList(grafoActivo, origenNode, destinoNode);
+        try{
+            camino = GraphAlgorithms.shortestPathList(grafoActivo, origenNode, destinoNode);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("No se encontró una ruta entre los equipos especificados.");
+        }
 
         return camino;
     }

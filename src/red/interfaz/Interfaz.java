@@ -68,7 +68,7 @@ public class Interfaz {
         int hop = 0;
         for (Vertex<Equipo> conexion : camino) {
             hop++;
-            String ip = conexion.getElement().getIpAddress();
+            String ip = "(" + conexion.getElement().getId()+ ") " + conexion.getElement().getIpAddress();
             sb.append(String.format("%-4d %-18s\n", hop, ip));
         }
 
@@ -90,11 +90,9 @@ public class Interfaz {
 
     /**
      * Muestra el arbol de expansion minimo
-     * @param red logica de MST
+     * @param mst Lista de conexiones del arbol de expansion minimo
      */
-    public static void MST(Logica red) {
-        List<String> lista = red.MST();
-
+    public static void MST(List<String> mst) {
         JTextArea outputTextArea = new JTextArea();
         outputTextArea.setEditable(false);
 
@@ -103,7 +101,7 @@ public class Interfaz {
         outputTextArea.append(String.format("%-10s %-10s %-15s\n", "Origen", "Destino", "Latencia (ms)"));
         outputTextArea.append("----------------------------------------\n");
 
-        for (String p : lista) {
+        for (String p : mst) {
             // Asume formato: "id1 <--> id2 [Latencia: xx ms]\n"
             String[] partes = p.split(" <--> | \\[Latencia: | ms\\]");
             if (partes.length >= 3) {
@@ -128,5 +126,9 @@ public class Interfaz {
      */
     public static void invalido() {
     	JOptionPane.showMessageDialog(null, "Opcion invalida");
+    }
+
+    public static void mostrarError(String mensaje){
+        utilUI.mostrarError(mensaje);
     }
 }
