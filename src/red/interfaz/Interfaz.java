@@ -47,7 +47,7 @@ public class Interfaz {
 
 
           if (estado) {
-            JOptionPane.showMessageDialog(null, "El equipo con la direccion IP" + equipo + "Esta activo");
+            JOptionPane.showMessageDialog(null, "El equipo con la direccion IP" + equipo + " Esta activo");
         }else {
              JOptionPane.showMessageDialog(null, "El equipo con IP " + equipo + " no está activo o no se encuentra en la red.");
         }
