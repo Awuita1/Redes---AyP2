@@ -21,7 +21,7 @@ public class Logica {
      *
      * @param equipos Mapa ordenado de equipos donde la clave es el ID y el valor es el objeto Equipo.
      * @param conexiones Lista de objetos Conexion que definen las aristas del grafo.
-     * Complejidad Temporal: O(n), donde V es el número de equipos y E el número de conexiones.
+          * Complejidad Temporal: O(V + E), donde V es el número de equipos y E el número de conexiones.
      */
     public Logica(TreeMap<String, Equipo> equipos, List<Conexion> conexiones) {
         red = new AdjacencyMapGraph<>(false);
@@ -88,11 +88,12 @@ public class Logica {
         if (origenNode == null || destinoNode == null) {
             throw new IllegalArgumentException("Uno o ambos equipos no se encuentran activos o no existen en la red.");
         }
-        camino = GraphAlgorithms.shortestPathList(grafoActivo, origenNode, destinoNode);
+
 
         try{
+            camino = GraphAlgorithms.shortestPathList(grafoActivo, origenNode, destinoNode);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("No se encontró una ruta entre los equipos especificados.");
+                        throw new IllegalArgumentException("No se encontró una ruta entre el equipo (" + origenNode.getElement().getId() + ") " + origenNode.getElement().getIpAddress() + " y el equipo (" + destinoNode.getElement().getId() + ") " + destinoNode.getElement().getIpAddress() + ".");
         }
 
         return camino;
@@ -103,7 +104,7 @@ public class Logica {
      * Utiliza el algoritmo de Kruskal.
      *
      * @return Una lista de cadenas de texto formateadas describiendo las conexiones del MST y sus latencias.
-     * Complejidad Temporal: O(nlog(n)).
+          * Complejidad Temporal: O(E log E), donde E es el número de aristas (conexiones activas) en el grafo.
      */
     public List<String> MST() {
         Graph<Equipo, Integer> grafoActivo = crearGrafoActivo();
@@ -124,7 +125,7 @@ public class Logica {
      * Las aristas del nuevo grafo utilizan la latencia (Integer) como peso para los algoritmos.
      *
      * @return Un grafo no dirigido con los elementos activos de la red.
-     * Complejidad Temporal: O(n), requerida para recorrer y filtrar todos los vértices y aristas del grafo original.
+          * Complejidad Temporal: O(V + E), donde V es el número de vértices y E el número de aristas; requerida para recorrer y filtrar todos los vértices y aristas del grafo original.
      */
     private Graph<Equipo, Integer> crearGrafoActivo() {
         Graph<Equipo, Integer> grafoActivo = new AdjacencyMapGraph<>(false);
